@@ -49,7 +49,8 @@ function pickRow() {
   for (const i in tempArray) {
     if(logicArray[tempArray[i]] === 0) {
       logicArray[tempArray[i]] = 1;
-      document.getElementsByClassName('cell')[tempArray[i]].style.backgroundColor = 'purple';
+      const reversedIndex = (logicArray.length-1)-tempArray[i];
+      document.getElementsByClassName('cell')[reversedIndex].style.backgroundColor = 'purple';
       break;
     }
   }
