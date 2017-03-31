@@ -1,3 +1,80 @@
 body {
-  background: salmon;
+  background: white;
+}
+
+h1 {
+  text-align: center;
+  width: 100%;
+  font-size: 30px;
+}
+
+.motherBrick {
+  text-align: center;
+  width: 100px;
+  height: 50px;
+  background-color: lightgrey;
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.board {
+  background-color: darkgrey;
+  /*display: inline-block;*/
+  width: 408px;
+  height: 416px;
+
+  display: block;
+
+  margin: 20px auto;
+
+  /* Centering the board */
+ /*  position:absolute; it can be fixed too*/
+  /*left:0; right:0;
+  top:55px; bottom:0;
+  margin: auto;*/
+
+  /*this to solve "the content will not be cut when the window is smaller than the content": */
+  /*max-width:100%;
+  max-height:100%;
+  overflow:auto;*/
+}
+
+.cell {
+
+  width: 100px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  background-color: grey;
+  border: 1px solid black;
+  float: left;
+}
+
+.buttons {
+  background-color: white;
+  /*display: inline-block;*/
+  width: 408px;
+  height: 416px;
+
+  display: block;
+
+  margin: 20px auto;
+}
+
+.rowButton {
+
+  width: 100px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  background-color: grey;
+  border: 1px solid black;
+  float: left;
+  font-size: 40px;
+}
+
+span {
+  /*display: none;*/
 }
