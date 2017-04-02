@@ -22,8 +22,8 @@ h1 {
 .board {
   background-color: darkgrey;
   /*display: inline-block;*/
-  width: 408px;
-  height: 416px;
+  width: 400px;
+  height: 400px;
 
   display: block;
 
@@ -48,15 +48,23 @@ h1 {
   line-height: 50px;
   text-align: center;
   background-color: grey;
-  border: 1px solid black;
   float: left;
+}
+
+.brick {
+
+  width: 100px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  background-color: navy;
 }
 
 .buttons {
   background-color: white;
   /*display: inline-block;*/
   width: 408px;
-  height: 416px;
+  height: 50px;
 
   display: block;
 
@@ -73,6 +81,12 @@ h1 {
   border: 1px solid black;
   float: left;
   font-size: 40px;
+}
+
+#score {
+  text-align: center;
+  width: 100%;
+  font-size: 20px;
 }
 
 span {
