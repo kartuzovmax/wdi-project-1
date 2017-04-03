@@ -1,5 +1,6 @@
 $(() => {
   $('.rowButton').on('click', pickRow);
+  $('.motherBrick').on('click', generateNewMotherBrick);
   generateNewMotherBrick();
 });
 
@@ -71,28 +72,29 @@ function generateNewMotherBrick() {
 
 function combineBricks(tempArray,i) {
 
-  let k = i;
-  while (k > 0 && logicArray[tempArray[k]] === logicArray[tempArray[k-1]] && logicArray[tempArray[i]] !== 16) {
+
+  console.log('logicArray[tempArray[k-1]] is ' + logicArray[tempArray[i-1]] + ' and logicArray[tempArray[k]] is ' + logicArray[tempArray[i]]);
+  while (i > 0 && logicArray[tempArray[i]] === logicArray[tempArray[i-1]] && logicArray[tempArray[i]] !== 16) {
     // Combining the bricks!
-    console.log('Combining the bricks. K is ' + k);
-    let brickPoints = logicArray[tempArray[k-1]];
+    console.log('Combining the bricks. i is ' + i);
+    let brickPoints = logicArray[tempArray[i-1]];
     if (brickPoints < 16) {
       // Maximum value is not reached, can combine bricks
       brickPoints = brickPoints * 2; // duplicating the points!
       score += brickPoints; // adding score
-      logicArray[tempArray[k]] = 0; // clearing new brick
-      logicArray[tempArray[k-1]] = brickPoints;
+      logicArray[tempArray[i]] = 0; // clearing new brick
+      logicArray[tempArray[i-1]] = brickPoints;
 
       // getting a darker shade
-      $(document.getElementById(tempArray[k-1])).animate({
+      $(document.getElementById(tempArray[i-1])).animate({
         backgroundColor: returnColorForPoints(brickPoints)
       }, 250);
-      if(document.getElementById(tempArray[k])) {
-        console.log('Removing brick with id ' + tempArray[k]);
-        document.getElementById(tempArray[k]).remove();
+      if(document.getElementById(tempArray[i])) {
+        console.log('Removing brick with id ' + tempArray[i]);
+        document.getElementById(tempArray[i]).remove();
       }
     }
-    k--;
+    i--;
   }
 }
   function pickRow() {
@@ -134,28 +136,7 @@ function combineBricks(tempArray,i) {
           //let k = i;
           logicArray[tempArray[i]] = motherBrick.points;
           combineBricks(tempArray,i);
-          // while (k > 0 && logicArray[tempArray[k]] === logicArray[tempArray[k-1]] && logicArray[tempArray[i]] !== 16) {
-          //   // Combining the bricks!
-          //   console.log('Combining the bricks. K is ' + k);
-          //   let brickPoints = logicArray[tempArray[k-1]];
-          //   if (brickPoints < 16) {
-          //     // Maximum value is not reached, can combine bricks
-          //     brickPoints = brickPoints * 2; // duplicating the points!
-          //     score += brickPoints; // adding score
-          //     logicArray[tempArray[k]] = 0; // clearing new brick
-          //     logicArray[tempArray[k-1]] = brickPoints;
-          //
-          //     // getting a darker shade
-          //     $(document.getElementById(tempArray[k-1])).animate({
-          //       backgroundColor: returnColorForPoints(brickPoints)
-          //     }, 250);
-          //     if(document.getElementById(tempArray[k])) {
-          //       console.log('Removing brick with id ' + tempArray[k]);
-          //       document.getElementById(tempArray[k]).remove();
-          //     }
-          //   }
-          //   k--;
-          // }
+
           break; // exiting the loop
         } else {
           console.log('Can not combine bricks');
@@ -228,7 +209,7 @@ function redrawBricks() {
   }
   // After board redraw, it could be that some bricks could be combined, so let's check for that
   for (let remainder = 0; remainder < 4; remainder++) {
-    let tempArray = [];
+    let tempArray = []; // this represents a collumn
     // Populating tempArray with correct values to determine a row
     for (var i = 0; i < document.getElementsByClassName('cell').length; i++) {
       if(parseInt(document.getElementsByClassName('cell')[i].getAttribute('value')) % 4 === remainder) {
@@ -236,9 +217,15 @@ function redrawBricks() {
       }
     }
     tempArray = tempArray.reverse(); // it sorts the tempArray in correct order
-    console.log('tempArray before combining bricks');
-    console.log(tempArray);
-    combineBricks(tempArray,tempArray.length-1);
+    for (let i = 0; i < tempArray.length; i++) {
+      console.log('element in the col: ' +logicArray[tempArray[i]]);
+      if (i !== 0 && (logicArray[tempArray[i]] === logicArray[tempArray[i-1]]) /*&& logicArray[tempArray[i]] === 0)*/ && logicArray[tempArray[i-1]] !== 16) {
+
+        console.log(tempArray);
+        combineBricks(tempArray,i);
+      }
+    }
+
   }
 }
 
