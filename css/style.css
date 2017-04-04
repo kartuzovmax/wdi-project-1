@@ -58,6 +58,16 @@ h1 {
   line-height: 50px;
   text-align: center;
   background-color: navy;
+  position: relative;
+}
+
+.newBrick {
+  width: 100px;
+  height: 50px;
+  position:absolute;
+  line-height: 50px;
+  text-align: center;
+  background-color: navy;
 }
 
 .buttons {

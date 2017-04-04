@@ -1,10 +1,27 @@
 $(() => {
-  $('.rowButton').on('click', pickRow);
+
+  //$('.rowButton').on('click', pickRow);
   $('.motherBrick').on('click', generateNewMotherBrick);
+
+  // Arrow key listeners
+  $(document).on('keydown', function (e) {
+      // use e.which
+    if (e.which === 37) {
+      moveBrickToLeft();
+    } else if (e.which === 39) {
+      moveBrickToRight();
+    } else if (e.which === 40) {
+      $currentBrick.stop(true,true);
+      console.log('down key');
+    }
+  });
+
   generateNewMotherBrick();
+  addBrickWithAnimation();
 });
 
-var score = 0;
+
+var score = 0, currentColumn = 0;
 var logicArray = [ // board 4x8
   0,0,0,0,
   0,0,0,0,
@@ -16,6 +33,8 @@ var logicArray = [ // board 4x8
   0,0,0,0
 ];
 
+
+
 const pointsArray = [1,2,4,8,16];
 const shadesArray = ['#ffc4f7','#ff95e8','#ff5cd6','#ff00bd','#bd008d'];
 
@@ -24,6 +43,36 @@ const motherBrick = {
   color: shadesArray[0],
   points: 1
 };
+var $currentBrick = {
+  color: motherBrick.color,
+  points: 1
+};
+
+function moveBrickToLeft() {
+
+  if(currentColumn===3) return; // can't go left
+
+  currentColumn--;
+  console.log('Move Left!');
+  //$currentBrick.stop();
+  $currentBrick.css({marginLeft: '-=100px'});
+
+  //Need to calculate when to stop in new animation
+  console.log($currentBrick.position().top);
+}
+
+function moveBrickToRight() {
+
+  if(currentColumn===0) return; // cen't go right
+
+  currentColumn++;
+  console.log('Move Right!');
+  //$currentBrick.stop();
+  $currentBrick.css({marginLeft: '+=100px'});
+  //Need to calculate when to stop in new animation
+  console.log($currentBrick.position().top);
+
+}
 
 // This function generates a future brick blueprint
 function generateNewMotherBrick() {
@@ -46,6 +95,57 @@ function generateNewMotherBrick() {
   $('.motherBrick').animate({
     backgroundColor: motherBrick.color
   }, 250);
+}
+
+function createNewBrick() {
+
+  generateNewMotherBrick(); // Generating a blue print for the new brick
+
+  var $newBrick = $(document.createElement('div'));
+  $newBrick.attr('class', 'newBrick');
+  $newBrick.attr('id', '666');
+  $newBrick.css('background-color', motherBrick.color);
+  $newBrick.css({top: 0, left: 300, position: 'relative'});
+
+  return $newBrick;
+}
+
+function addBrickWithAnimation() {
+
+  $currentBrick = createNewBrick();
+  const $board = $('.board');
+  console.log($board);
+  console.log($currentBrick);
+
+  $board.append($currentBrick);
+
+  console.log($currentBrick.parent());
+  //$(document.getElementsByClassName('board')[0].appendChild($newBrick));
+  // Calculating when to stop animation
+  var tempArray = returnColumnArray(currentColumn);
+  var freeSpace = 0;
+  var fallTime = 0;
+  for (let i = tempArray.length-2; i > -1; i--) {
+
+    if (logicArray[tempArray[i]] === 0) {
+      freeSpace += 50;
+      fallTime += 1000;
+    } else {
+      break;
+    }
+  }
+  console.log('Free space is ' + freeSpace);
+  //$newBrick.css({top: 0, left: 0, position: 'relative'});
+  $currentBrick.animate({
+    top: freeSpace
+  }, fallTime,'linear', function() {
+    // Animation complete.
+    console.log('animation complete');
+
+    placeTheBrick(); // Need to place the new brick
+    $currentBrick.remove(); // Brick was placed, removing its copy
+    addBrickWithAnimation();
+  });
 }
 
   // This function returns correct brick color based on its points
@@ -97,30 +197,33 @@ function combineBricks(tempArray,i) {
     i--;
   }
 }
-  function pickRow() {
-    //console.log('pick row ' + this.getAttribute('value'));
-    const row = parseInt(this.getAttribute('value'));
-    let remainder = 0;
-    if (row === 0) {
-      remainder = 0;
-    } else if (row === 1) {
-      remainder = 1;
-    } else if (row === 2) {
-      remainder = 2;
-    } else if (row === 3) {
-      remainder = 3;
-    }
-    //console.log('remainder is ' + remainder);
-    let tempArray = [];
 
-    // Populating tempArray with correct values to determine a row
-    for (var i = 0; i < document.getElementsByClassName('cell').length; i++) {
-      if(parseInt(document.getElementsByClassName('cell')[i].getAttribute('value')) % 4 === remainder) {
-        // console.log(document.getElementsByClassName('cell')[i].getAttribute('value'));
-        tempArray.push(parseInt(document.getElementsByClassName('cell')[i].getAttribute('value')));
-      }
+function returnColumnArray(col) {
+  var tempArray = [];
+  for (var i = 0; i < document.getElementsByClassName('cell').length; i++) {
+    if(parseInt(document.getElementsByClassName('cell')[i].getAttribute('value')) % 4 === col) {
+      // console.log(document.getElementsByClassName('cell')[i].getAttribute('value'));
+      tempArray.push(parseInt(document.getElementsByClassName('cell')[i].getAttribute('value')));
     }
-    tempArray = tempArray.reverse(); // it sorts the tempArray in correct order
+  }
+  tempArray = tempArray.reverse();
+  return tempArray;
+}
+  function placeTheBrick() {
+    //console.log('pick row ' + this.getAttribute('value'));
+    // const row = parseInt(this.getAttribute('value'));
+    // let remainder = 0;
+    // if (row === 0) {
+    //   remainder = 0;
+    // } else if (row === 1) {
+    //   remainder = 1;
+    // } else if (row === 2) {
+    //   remainder = 2;
+    // } else if (row === 3) {
+    //   remainder = 3;
+    // }
+    //console.log('remainder is ' + remainder);
+    const tempArray = returnColumnArray(currentColumn);
 
     // creating a Game Over flag
     var isGameOver = true;
