@@ -20,7 +20,7 @@ h1 {
 }
 
 .board {
-  background-color: darkgrey;
+  background-color: white;
   /*display: inline-block;*/
   width: 400px;
   height: 400px;
@@ -47,7 +47,7 @@ h1 {
   height: 50px;
   line-height: 50px;
   text-align: center;
-  background-color: grey;
+  background-color: white;
   float: left;
 }
 
@@ -100,5 +100,5 @@ h1 {
 }
 
 span {
-  /*display: none;*/
+  display: none;
 }

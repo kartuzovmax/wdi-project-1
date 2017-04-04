@@ -1,6 +1,5 @@
 $(() => {
 
-  //$('.rowButton').on('click', pickRow);
   $('.motherBrick').on('click', generateNewMotherBrick);
 
   // Arrow key listeners
@@ -13,25 +12,34 @@ $(() => {
     } else if (e.which === 40) {
       $currentBrick.stop(true,true);
       console.log('down key');
+    } else if (e.which === 13) {
+       // Start the game
+      restartTheGame();
+    } else if (e.which === 32) {
+      restartTheGame();
     }
   });
 
-  generateNewMotherBrick();
-  addBrickWithAnimation();
 });
 
+function restartTheGame() {
+  logicArray = [ // board 4x8
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0
+  ];
+  score = 0;
+  document.getElementsByClassName('brick').remove();
+  addBrickWithAnimation();
+}
 
 var score = 0, currentColumn = 0;
-var logicArray = [ // board 4x8
-  0,0,0,0,
-  0,0,0,0,
-  0,0,0,0,
-  0,0,0,0,
-  0,0,0,0,
-  0,0,0,0,
-  0,0,0,0,
-  0,0,0,0
-];
+var logicArray = [];
 
 
 
@@ -52,7 +60,7 @@ function moveBrickToLeft() {
 
   if(currentColumn===3) return; // can't go left
 
-  currentColumn--;
+  currentColumn++;
   console.log('Move Left!');
   //$currentBrick.stop();
   $currentBrick.css({marginLeft: '-=100px'});
@@ -65,7 +73,7 @@ function moveBrickToRight() {
 
   if(currentColumn===0) return; // cen't go right
 
-  currentColumn++;
+  currentColumn--;
   console.log('Move Right!');
   //$currentBrick.stop();
   $currentBrick.css({marginLeft: '+=100px'});
@@ -97,39 +105,45 @@ function generateNewMotherBrick() {
   }, 250);
 }
 
-function createNewBrick() {
+function createNewBrickInColumn(col) {
 
   generateNewMotherBrick(); // Generating a blue print for the new brick
-
+  let startDistance = 0;
+  switch (col) {
+    case 0: startDistance = 300; break;
+    case 1: startDistance = 200; break;
+    case 2: startDistance = 100; break;
+    case 3: startDistance = 0; break;
+  }
   var $newBrick = $(document.createElement('div'));
   $newBrick.attr('class', 'newBrick');
   $newBrick.attr('id', '666');
   $newBrick.css('background-color', motherBrick.color);
-  $newBrick.css({top: 0, left: 300, position: 'relative'});
+  $newBrick.css({top: 0, left: startDistance, position: 'relative'});
 
   return $newBrick;
 }
 
 function addBrickWithAnimation() {
 
-  $currentBrick = createNewBrick();
+  generateNewMotherBrick(); // Making a blueprint for the brick
+  currentColumn = Math.floor(Math.random() * 4);
+  console.log('currentColumn is ' + currentColumn);
+  $currentBrick = createNewBrickInColumn(currentColumn);
   const $board = $('.board');
-  console.log($board);
-  console.log($currentBrick);
-
   $board.append($currentBrick);
 
-  console.log($currentBrick.parent());
-  //$(document.getElementsByClassName('board')[0].appendChild($newBrick));
   // Calculating when to stop animation
   var tempArray = returnColumnArray(currentColumn);
-  var freeSpace = 0;
-  var fallTime = 0;
+  var freeSpace = 0; // holds distance for brick to travel
+  var fallTime = 0; // holds time for brick to achieve the distance
+
+  // calculating distance and time
   for (let i = tempArray.length-2; i > -1; i--) {
 
     if (logicArray[tempArray[i]] === 0) {
       freeSpace += 50;
-      fallTime += 1000;
+      fallTime += 100;
     } else {
       break;
     }
@@ -139,12 +153,16 @@ function addBrickWithAnimation() {
   $currentBrick.animate({
     top: freeSpace
   }, fallTime,'linear', function() {
-    // Animation complete.
-    console.log('animation complete');
+    // Animation completed.
+    console.log('animation completed');
 
-    placeTheBrick(); // Need to place the new brick
-    $currentBrick.remove(); // Brick was placed, removing its copy
-    addBrickWithAnimation();
+    if(placeTheBrick()) { // if false, it is Game Over
+      $currentBrick.remove(); // Brick was placed, removing its copy
+      setTimeout(addBrickWithAnimation,500); // Adding a new brick!
+    } else {
+      $currentBrick.remove(); // removing copy
+      restartTheGame(); // restart the game
+    }
   });
 }
 
@@ -210,19 +228,7 @@ function returnColumnArray(col) {
   return tempArray;
 }
   function placeTheBrick() {
-    //console.log('pick row ' + this.getAttribute('value'));
-    // const row = parseInt(this.getAttribute('value'));
-    // let remainder = 0;
-    // if (row === 0) {
-    //   remainder = 0;
-    // } else if (row === 1) {
-    //   remainder = 1;
-    // } else if (row === 2) {
-    //   remainder = 2;
-    // } else if (row === 3) {
-    //   remainder = 3;
-    // }
-    //console.log('remainder is ' + remainder);
+
     const tempArray = returnColumnArray(currentColumn);
 
     // creating a Game Over flag
@@ -266,16 +272,16 @@ function returnColumnArray(col) {
     removeRowIfNeeded();
 
     if (isGameOver) {
-      gameOver();
-      return;
+      setTimeout(gameOver,2000);
+      return gameOver();
     }
 
     // Updating score label
     var scoreElement = document.getElementById('score');
     scoreElement.innerHTML = `Score: ${score}`;
     console.log('logicArray is ' + logicArray);
-    generateNewMotherBrick(); // move is over, generating a new brick
-  }
+    return true;
+}
 
 function removeRowIfNeeded() {
   for (let i = 0; i < logicArray.length; i+=4) {
@@ -335,6 +341,8 @@ function redrawBricks() {
 // This function is called when no more space for new bricks are left
 function gameOver() {
   document.getElementById('score').innerHTML = `Game Over! Score: ${score}`;
+
+  return false; // this will trigger restart of the game
 }
 
 // Functions to delete a child node. Source: http://stackoverflow.com/questions/3387427/remove-element-by-id
