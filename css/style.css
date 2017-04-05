@@ -20,25 +20,12 @@ h1 {
 }
 
 .board {
+  position: relative;
   background-color: white;
-  /*display: inline-block;*/
   width: 400px;
   height: 400px;
-
   display: block;
-
   margin: 20px auto;
-
-  /* Centering the board */
- /*  position:absolute; it can be fixed too*/
-  /*left:0; right:0;
-  top:55px; bottom:0;
-  margin: auto;*/
-
-  /*this to solve "the content will not be cut when the window is smaller than the content": */
-  /*max-width:100%;
-  max-height:100%;
-  overflow:auto;*/
 }
 
 .cell {
@@ -47,7 +34,7 @@ h1 {
   height: 50px;
   line-height: 50px;
   text-align: center;
-  background-color: white;
+  background-color: grey;
   float: left;
 }
 

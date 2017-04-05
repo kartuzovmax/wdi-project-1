@@ -11,40 +11,23 @@ $(() => {
       moveBrickToRight();
     } else if (e.which === 40) {
       $currentBrick.stop(true,true);
-      console.log('down key');
     } else if (e.which === 13) {
        // Start the game
       restartTheGame();
     } else if (e.which === 32) {
+      $currentBrick.stop();
+      $currentBrick.remove();
       restartTheGame();
     }
   });
-
 });
-
-function restartTheGame() {
-  logicArray = [ // board 4x8
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0
-  ];
-  score = 0;
-  document.getElementsByClassName('brick').remove();
-  addBrickWithAnimation();
-}
 
 var score = 0, currentColumn = 0;
 var logicArray = [];
 
-
-
 const pointsArray = [1,2,4,8,16];
 const shadesArray = ['#ffc4f7','#ff95e8','#ff5cd6','#ff00bd','#bd008d'];
+
 
 // Creating a future brick blueprint
 const motherBrick = {
@@ -56,17 +39,55 @@ var $currentBrick = {
   points: 1
 };
 
+function restartTheGame() {
+  logicArray = [ // board 4x8
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0
+  ]; // reseting logic
+
+  score = 0; // reseting score
+  const $scoreLabel = $('#score');
+  $scoreLabel.html(score);
+
+  document.getElementsByClassName('brick').remove(); // removing all bricks
+  addBrickWithAnimation(); // start the game
+}
+
+
 function moveBrickToLeft() {
 
-  if(currentColumn===3) return; // can't go left
+  if(currentColumn===3) return; // can't go left any further
 
   currentColumn++;
-  console.log('Move Left!');
-  //$currentBrick.stop();
-  $currentBrick.css({marginLeft: '-=100px'});
+  $currentBrick.stop(true); // canceling current animation
+  $currentBrick.css({marginLeft: '-=100px'}); // moving brick one cell left
 
-  //Need to calculate when to stop in new animation
-  console.log($currentBrick.position().top);
+  // Calculating when to stop animation
+  var tempArray = returnColumnArray(currentColumn);
+  var freeSpace = calculateDistanceToClosestBrick(tempArray); // holds distance for brick to travel
+  var fallTime = calculateFallTimeBasedOnDistance(freeSpace); // holds time for brick to achieve the distance
+
+  // Running a new animation
+  $currentBrick.animate({
+    top: freeSpace
+  }, fallTime,'linear', function() {
+    // Animation completed.
+    console.log('animation completed after move');
+
+    if(placeTheBrick()) { // if false, it is Game Over
+      $currentBrick.remove(); // Brick was placed, removing its copy
+      setTimeout(addBrickWithAnimation,500); // Adding a new brick!
+    } else {
+      $currentBrick.remove(); // removing copy
+      restartTheGame(); // restart the game
+    }
+  });
 }
 
 function moveBrickToRight() {
@@ -74,13 +95,65 @@ function moveBrickToRight() {
   if(currentColumn===0) return; // cen't go right
 
   currentColumn--;
-  console.log('Move Right!');
-  //$currentBrick.stop();
+  $currentBrick.stop(true); // canceling current animation
   $currentBrick.css({marginLeft: '+=100px'});
+
+  // Calculating when to stop animation
+  var tempArray = returnColumnArray(currentColumn);
+  var freeSpace = calculateDistanceToClosestBrick(tempArray); // holds distance for brick to travel
+  var fallTime = calculateFallTimeBasedOnDistance(freeSpace); // holds time for brick to achieve the distance
+
+  // Running a new animation
+  $currentBrick.animate({
+    top: freeSpace
+  }, fallTime,'linear', function() {
+    // Animation completed.
+    console.log('animation completed after move');
+
+    if(placeTheBrick()) { // if false, it is Game Over
+      $currentBrick.remove(); // Brick was placed, removing its copy
+      setTimeout(addBrickWithAnimation,500); // Adding a new brick!
+    } else {
+      $currentBrick.remove(); // removing copy
+      restartTheGame(); // restart the game
+    }
+  });
+}
+
+function calculateDistanceToClosestBrick(tempArray) {
+
   //Need to calculate when to stop in new animation
   console.log($currentBrick.position().top);
 
+  // Finding the cell which we will place the brick
+  for (let i = tempArray.length-2; i > -1; i--) {
+
+    if (logicArray[tempArray[i]] !== 0) {
+
+      // There is brick here, putting new brick on top
+      console.log('Current brick position: ' + $currentBrick.position().top);
+      const brickID = `#${tempArray[i]}`;
+      const $nextBrick = $(brickID);
+      console.log('Next brick position: ' + $nextBrick.position().top);
+      console.log(brickID);
+      return $nextBrick.position().top - 50.0;
+    }
+  }
+  // No bricks below, putting new brick on the lowest row
+  return 350;
 }
+
+function calculateFallTimeBasedOnDistance(dist) {
+
+  var distanceBetweenBricks = dist - $currentBrick.position().top;
+
+  if (distanceBetweenBricks < 50.0) {
+    return 600;
+  } else {
+    return ((dist - $currentBrick.position().top) / 50) * 1000;
+  }
+}
+
 
 // This function generates a future brick blueprint
 function generateNewMotherBrick() {
@@ -128,7 +201,6 @@ function addBrickWithAnimation() {
 
   generateNewMotherBrick(); // Making a blueprint for the brick
   currentColumn = Math.floor(Math.random() * 4);
-  console.log('currentColumn is ' + currentColumn);
   $currentBrick = createNewBrickInColumn(currentColumn);
   const $board = $('.board');
   $board.append($currentBrick);
@@ -143,13 +215,14 @@ function addBrickWithAnimation() {
 
     if (logicArray[tempArray[i]] === 0) {
       freeSpace += 50;
-      fallTime += 100;
+      fallTime += 800;
     } else {
       break;
     }
   }
   console.log('Free space is ' + freeSpace);
   //$newBrick.css({top: 0, left: 0, position: 'relative'});
+
   $currentBrick.animate({
     top: freeSpace
   }, fallTime,'linear', function() {
@@ -191,10 +264,8 @@ function addBrickWithAnimation() {
 function combineBricks(tempArray,i) {
 
 
-  console.log('logicArray[tempArray[k-1]] is ' + logicArray[tempArray[i-1]] + ' and logicArray[tempArray[k]] is ' + logicArray[tempArray[i]]);
   while (i > 0 && logicArray[tempArray[i]] === logicArray[tempArray[i-1]] && logicArray[tempArray[i]] !== 16) {
     // Combining the bricks!
-    console.log('Combining the bricks. i is ' + i);
     let brickPoints = logicArray[tempArray[i-1]];
     if (brickPoints < 16) {
       // Maximum value is not reached, can combine bricks
@@ -208,7 +279,6 @@ function combineBricks(tempArray,i) {
         backgroundColor: returnColorForPoints(brickPoints)
       }, 250);
       if(document.getElementById(tempArray[i])) {
-        console.log('Removing brick with id ' + tempArray[i]);
         document.getElementById(tempArray[i]).remove();
       }
     }
@@ -238,9 +308,8 @@ function returnColumnArray(col) {
     for (let i = 0; i < tempArray.length; i++) {
 
         // Checking if we can combine bricks
-        console.log('i is ' + i);
         if (i !== 0 && (motherBrick.points === logicArray[tempArray[i-1]] && logicArray[tempArray[i]] === 0) && logicArray[tempArray[i-1]] !== 16) {
-          console.log('Should combine bricks');
+
           isGameOver = false;
           //let k = i;
           logicArray[tempArray[i]] = motherBrick.points;
@@ -248,10 +317,9 @@ function returnColumnArray(col) {
 
           break; // exiting the loop
         } else {
-          console.log('Can not combine bricks');
+
           if(logicArray[tempArray[i]] === 0) {
 
-            console.log('Placing the brick');
             isGameOver = false; // We have place for another brick!
             logicArray[tempArray[i]] = motherBrick.points; // Setting correct points for current brick
             // Placing the brick
@@ -277,9 +345,9 @@ function returnColumnArray(col) {
     }
 
     // Updating score label
-    var scoreElement = document.getElementById('score');
-    scoreElement.innerHTML = `Score: ${score}`;
-    console.log('logicArray is ' + logicArray);
+    const $scoreLabel = $('#score');
+    $scoreLabel.text(score);
+
     return true;
 }
 
@@ -305,8 +373,7 @@ function removeRowIfNeeded() {
 // This function is called when row is removed so it could redraw the board according to a logicArray
 function redrawBricks() {
   document.getElementsByClassName('brick').remove();
-  console.log('logicArray before combining bricks');
-  console.log(logicArray);
+
   for (let i = 0; i < logicArray.length; i++) {
 
     if (logicArray[i] !== 0) {
@@ -327,7 +394,7 @@ function redrawBricks() {
     }
     tempArray = tempArray.reverse(); // it sorts the tempArray in correct order
     for (let i = 0; i < tempArray.length; i++) {
-      console.log('element in the col: ' +logicArray[tempArray[i]]);
+
       if (i !== 0 && (logicArray[tempArray[i]] === logicArray[tempArray[i-1]]) /*&& logicArray[tempArray[i]] === 0)*/ && logicArray[tempArray[i-1]] !== 16) {
 
         console.log(tempArray);
@@ -341,7 +408,6 @@ function redrawBricks() {
 // This function is called when no more space for new bricks are left
 function gameOver() {
   document.getElementById('score').innerHTML = `Game Over! Score: ${score}`;
-
   return false; // this will trigger restart of the game
 }
 
