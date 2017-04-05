@@ -1,6 +1,16 @@
-$(() => {
+/*
 
-  $('.motherBrick').on('click', generateNewMotherBrick);
+Shades.
+Developed by Maxim Kartuzov, 2017.
+WDI-ldn-26 Project 1
+
+Put bricks of same color on top of each other to merge them into a single brick.
+Make a row of bricks of same color to dismiss the row and get points.
+Game ends once a brick reaches the top.
+
+*/
+
+$(() => {
 
   // Arrow key listeners
   $(document).on('keydown', function (e) {
@@ -27,11 +37,11 @@ $(() => {
 });
 
 var score = 0, currentColumn = 0;
-var isAnimationRunning = false, shouldRemoveBrick = true, shouldCreateNewBrick = true, brickNotMovingDown = true;
+var isAnimationRunning = false, shouldRemoveBrick = true, shouldCreateNewBrick = true, brickNotMovingDown = true, isNewBrickBeingFormed = true;
 var logicArray = [];
 
 const pointsArray = [1,2,4,8,16];
-const shadesArray = ['#ffc4f7','#ff95e8','#ff5cd6','#ff00bd','#bd008d'];
+const shadesArray = ['#caf7d7','#85eea3','#43e36f','#26b34a','#125925'];
 
 
 // Creating a future brick blueprint
@@ -51,6 +61,7 @@ function restartTheGame() {
   shouldRemoveBrick = true;
   shouldCreateNewBrick = true;
   brickNotMovingDown = true;
+  isNewBrickBeingFormed = true;
 
   logicArray = [ // board 4x8
     0,0,0,0,
@@ -71,10 +82,47 @@ function restartTheGame() {
   addBrickWithAnimation(); // start the game
 }
 
+function canLegallyMoveBrickLeft() {
+
+  const tempArray = returnColumnArray(currentColumn+1); // checking the column on the right
+  let collumnHeight = 400;
+  // Calculating the amount of space taken by other blocks in next collumn
+  for (let i = 0; i < tempArray.length; i++) {
+    if(logicArray[tempArray[i]] !== 0) {
+      collumnHeight -= 50;
+    }
+  }
+  console.log('Next collumnHeight is ' + collumnHeight);
+  if ($currentBrick.position().top + 50 >= collumnHeight) {
+    // Can't move left
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function canLegallyMoveBrickRight() {
+
+  const tempArray = returnColumnArray(currentColumn-1); // checking the column on the right
+  let collumnHeight = 400;
+  // Calculating the amount of space taken by other blocks in next collumn
+  for (let i = 0; i < tempArray.length; i++) {
+    if(logicArray[tempArray[i]] !== 0) {
+      collumnHeight -= 50;
+    }
+  }
+  console.log('Next collumnHeight is ' + collumnHeight);
+  if ($currentBrick.position().top + 50 >= collumnHeight) {
+    // Can't move left
+    return false;
+  } else {
+    return true;
+  }
+}
 
 function moveBrickToLeft() {
 
-  if(currentColumn===3) return; // can't go left any further
+  if(currentColumn===3 || isNewBrickBeingFormed || !canLegallyMoveBrickLeft()) return; // can't go left any further
 
   currentColumn++;
   $currentBrick.stop(true); // canceling current animation
@@ -98,7 +146,7 @@ function moveBrickToLeft() {
         $currentBrick.remove(); // Brick was placed, removing its copy
       }
       if (shouldCreateNewBrick) {
-        setTimeout(addBrickWithAnimation,500); // Adding a new brick!
+        addBrickWithAnimation(); // Adding a new brick!
       }
     } else {
       $currentBrick.remove(); // removing copy
@@ -109,7 +157,7 @@ function moveBrickToLeft() {
 
 function moveBrickToRight() {
 
-  if(currentColumn===0) return; // cen't go right
+  if(currentColumn===0 || isNewBrickBeingFormed || !canLegallyMoveBrickRight()) return; // cen't go right
 
   currentColumn--;
   $currentBrick.stop(true); // canceling current animation
@@ -134,7 +182,7 @@ function moveBrickToRight() {
         console.log('Not allowed to remove brick');
       }
       if (shouldCreateNewBrick) {
-        setTimeout(addBrickWithAnimation,500); // Adding a new brick!
+        addBrickWithAnimation(); // Adding a new brick!
         console.log('Not allowed to make a new brick');
       }
     } else {
@@ -146,7 +194,7 @@ function moveBrickToRight() {
 
 function moveBrickDown() {
 
-  if(isAnimationRunning === false) return;
+  if(isAnimationRunning === false || isNewBrickBeingFormed) return;
   $currentBrick.stop(true);
   brickNotMovingDown = false;
   isAnimationRunning = false;
@@ -167,7 +215,7 @@ function moveBrickDown() {
         console.log('Not allowed to remove brick');
       }
       if (shouldCreateNewBrick) {
-        setTimeout(addBrickWithAnimation,500); // Adding a new brick!
+        addBrickWithAnimation(); // Adding a new brick!
         console.log('Not allowed to make a new brick');
       }
     } else {
@@ -234,73 +282,96 @@ function generateNewMotherBrick() {
   }, 0);
 }
 
-function createNewBrickInColumn(col) {
+function createNewBrickInColumn() {
 
   generateNewMotherBrick(); // Generating a blue print for the new brick
-  let startDistance = 0;
-  switch (col) {
-    case 0: startDistance = 300; break;
-    case 1: startDistance = 200; break;
-    case 2: startDistance = 100; break;
-    case 3: startDistance = 0; break;
-  }
+
   var $newBrick = $(document.createElement('div'));
   $newBrick.attr('class', 'newBrick');
   $newBrick.attr('id', '666');
   $newBrick.css('background-color', motherBrick.color);
-  $newBrick.css({top: 0, left: startDistance, position: 'relative'});
+  $newBrick.css({top: 0, left: 0, position: 'relative'});
+  $newBrick.css('width', 400);
+  $newBrick.css('height', 50);
 
   return $newBrick;
 }
 
 function addBrickWithAnimation() {
 
-  generateNewMotherBrick(); // Making a blueprint for the brick
+  //generateNewMotherBrick(); // Making a blueprint for the brick
+  isNewBrickBeingFormed = true;
   currentColumn = Math.floor(Math.random() * 4);
   $currentBrick = createNewBrickInColumn(currentColumn);
-  const $board = $('.board');
-  $board.append($currentBrick);
-
-  // Calculating when to stop animation
-  var tempArray = returnColumnArray(currentColumn);
-  var freeSpace = 0; // holds distance for brick to travel
-  var fallTime = 0; // holds time for brick to achieve the distance
-
-  // calculating distance and time
-  for (let i = tempArray.length-2; i > -1; i--) {
-
-    if (logicArray[tempArray[i]] === 0) {
-      freeSpace += 50;
-      fallTime += 800;
-    } else {
-      break;
-    }
+  let startDistance = 0;
+  switch (currentColumn) {
+    case 0: startDistance = 300; break;
+    case 1: startDistance = 200; break;
+    case 2: startDistance = 100; break;
+    case 3: startDistance = 0; break;
   }
-  console.log('Free space is ' + freeSpace);
-  //$newBrick.css({top: 0, left: 0, position: 'relative'});
+  const $spawn = $('.spawn');
+  const $board = $('.board');
+  console.log('Current brick position', $currentBrick.position().left);
+  //console.log('Current spawn position', $spawn.position().left);
+  $spawn.append($currentBrick);
 
-  isAnimationRunning = true;
   $currentBrick.animate({
-    top: freeSpace
-  }, fallTime,'linear', function() {
-    // Animation completed.
-    isAnimationRunning = false;
-    console.log('animation completed');
-    if(placeTheBrick()) { // if false, it is Game Over
-      if(shouldRemoveBrick) {
-        $currentBrick.remove(); // Brick was placed, removing its copy
+    width: '100px',
+    height: '50px',
+    left: startDistance,
+    backgroundColor: motherBrick.color
+  }, 500,'linear', addBrick);
+
+  function addBrick() {
+
+    isNewBrickBeingFormed = false;
+    console.log('should push brick');
+    $currentBrick.css({top: -50, left: startDistance, position: 'relative'});
+    $board.append($currentBrick);
+
+    // Calculating when to stop animation
+    var tempArray = returnColumnArray(currentColumn);
+    var freeSpace = 0; // holds distance for brick to travel
+    var fallTime = 0; // holds time for brick to achieve the distance
+
+    // calculating distance and time
+    for (let i = tempArray.length-2; i > -1; i--) {
+
+      if (logicArray[tempArray[i]] === 0) {
+        freeSpace += 50;
+        fallTime += 800;
       } else {
-        console.log('Not allowed to remove brick');
+        break;
       }
-      if (shouldCreateNewBrick) {
-        setTimeout(addBrickWithAnimation,500); // Adding a new brick!
-        console.log('Not allowed to make a new brick');
-      }// Adding a new brick!
-    } else {
-      $currentBrick.remove(); // removing copy
-      restartTheGame(); // restart the game
     }
-  });
+    console.log('Free space is ' + freeSpace);
+    //$newBrick.css({top: 0, left: 0, position: 'relative'});
+
+    isAnimationRunning = true;
+    $currentBrick.animate({
+      top: freeSpace
+    }, fallTime,'linear', function() {
+      // Animation completed.
+      isAnimationRunning = false;
+      console.log('animation completed');
+      if(placeTheBrick()) { // if false, it is Game Over
+        if(shouldRemoveBrick) {
+          $currentBrick.remove(); // Brick was placed, removing its copy
+        } else {
+          console.log('Not allowed to remove brick');
+        }
+        if (shouldCreateNewBrick) {
+          addBrickWithAnimation(); // Adding a new brick!
+          console.log('Not allowed to make a new brick');
+        }// Adding a new brick!
+      } else {
+        $currentBrick.remove(); // removing copy
+        restartTheGame(); // restart the game
+      }
+    });
+
+  }
 }
 
   // This function returns correct brick color based on its points
@@ -333,6 +404,7 @@ function combineBricks(tempArray,i) {
     shouldRemoveBrick = false;
     shouldCreateNewBrick = false;
     isAnimationRunning = false;
+    isNewBrickBeingFormed = true;
 
     let brickPoints = logicArray[tempArray[i-1]];
     if (brickPoints < 16) {
@@ -361,7 +433,7 @@ function combineBricks(tempArray,i) {
         if (i > 0 && logicArray[tempArray[i]] === logicArray[tempArray[i-1]] && logicArray[tempArray[i]] !== 16) {
           mergeBricks(i);
         } else {
-          // Refreshing some info...
+          // No more merging. Refreshing some info...
 
           // Checking if we can remove the row to free up space
           removeRowIfNeeded();
@@ -371,7 +443,8 @@ function combineBricks(tempArray,i) {
           $currentBrick.remove();
           shouldRemoveBrick = true;
           shouldCreateNewBrick = true;
-          setTimeout(addBrickWithAnimation,500);
+          isAnimationRunning = false;
+          addBrickWithAnimation();
         }
       });
     }
