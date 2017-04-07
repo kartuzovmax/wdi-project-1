@@ -25,6 +25,16 @@ new bricks to be positioned.
 * JQuery.color
 * Google Fonts
 
+### What must be done:
+
+* Fix a bug which make some bricks disappear
+* Increase speed of bricks as score increases
+* Make a tutorial
+
+### Resources used:
+
+
+
 
 
 
