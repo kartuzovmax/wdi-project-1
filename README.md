@@ -32,7 +32,7 @@ new bricks to be positioned.
 * Make a tutorial
 
 ### Resources used:
-
+* [Sounds from opengameart.org](https://opengameart.org)
 
 
 
