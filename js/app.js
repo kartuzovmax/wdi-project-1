@@ -8,6 +8,9 @@ Put bricks of same color on top of each other to merge them into a single brick.
 Make a row of bricks of same color to dismiss the row and get points.
 Game ends once a brick reaches the top.
 
+CODE  HAVE NOT BEEN REFACTORED YET AND IS PRETTY MESSY SO BE AWARE.
+
+
 */
 
 $(() => {
@@ -664,7 +667,7 @@ function playMusic() {
   audio = new Audio('sounds/forest.mp3');
   audio.addEventListener('ended', function() {
     this.currentTime = 0;
-    //this.play();
+    this.play();
   }, false);
   audio.play();
 }
