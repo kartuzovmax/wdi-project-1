@@ -6,11 +6,17 @@ body {
 p {
   margin: 0 auto 0 auto;
   text-align: center;
-  width: 100%;
+  width: 50%;
   font-size: 70px;
   font-family: 'Amatic SC', cursive;
 }
-
+#audioSwitcher {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  float: right;
+  margin: -60px 20px;
+}
 .motherBrick {
   text-align: center;
   width: 100px;
@@ -30,6 +36,7 @@ p {
   display: block;
   margin: 0px auto 20px auto;
 }
+
 
 .spawn {
 

@@ -34,11 +34,27 @@ $(() => {
       // restartTheGame();
     }
   });
+
   playMusic();
+
+  $('#audioSwitcher').on('click', function() {
+
+    if(isMusicOn) {
+      isMusicOn = false;
+      console.log('Music off');
+      $('#audioSwitcher').attr('src', 'audioOff.png');
+      stopMusic();
+    } else {
+      isMusicOn = true;
+      console.log('Music on');
+      $('#audioSwitcher').attr('src', 'audioOn.png');
+      playMusic();
+    }
+  });
 });
 
 var score = 0, currentColumn = 0;
-var isAnimationRunning = false, shouldRemoveBrick = true, shouldCreateNewBrick = true, brickNotMovingDown = true, isNewBrickBeingFormed = true;
+var isAnimationRunning = false, shouldRemoveBrick = true, shouldCreateNewBrick = true, brickNotMovingDown = true, isNewBrickBeingFormed = true, isMusicOn = true;
 var logicArray = [];
 
 const pointsArray = [1,2,4,8,16];
@@ -648,9 +664,17 @@ function playMusic() {
   audio = new Audio('sounds/forest.mp3');
   audio.addEventListener('ended', function() {
     this.currentTime = 0;
-    this.play();
+    //this.play();
   }, false);
   audio.play();
+}
+
+function stopMusic() {
+  console.log('stop');
+  var audio = document.getElementById('audio');
+  audio.pause();
+  // audio = new Audio('');
+  // audio.play();
 }
 
 function playSound(beep) {
